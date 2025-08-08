@@ -1,10 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mail } from 'lucide-react'; // Assuming you have an icon for messages
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Autoplay from 'embla-carousel-autoplay';
 import messages from '@/messages.json';
 
@@ -12,44 +10,55 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from '@/components/ui/carousel';
 
 export default function Home() {
   return (
-    <>
-      {/* Main content */}
-      <main className="flex-grow flex flex-col items-center justify-center px-4 md:px-24 py-12 bg-gray-800 text-white">
-        <section className="text-center mb-8 md:mb-12">
-          <h1 className="text-3xl md:text-5xl font-bold">
+    <div className="flex flex-col min-h-screen">
+      {/* Main content - no changes here */}
+      <main className="flex-grow flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-20 md:py-24 bg-gray-900 text-white relative overflow-hidden">
+        {/* ... other main content ... */}
+        <section className="text-center mb-10 md:mb-16">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400">
             Dive into the World of Anonymous Feedback
           </h1>
-          <p className="mt-3 md:mt-4 text-base md:text-lg">
-            True Feedback - Where your identity remains a secret.
+          <p className="mt-4 text-base md:text-lg text-neutral-300 max-w-2xl mx-auto">
+            True Feedback - Where your identity remains a secret. Explore messages, share your thoughts, and stay anonymous.
           </p>
+          <Button
+            asChild
+            className="mt-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:scale-105 transition-transform duration-300"
+          >
+            <Link href="/sign-up">Get Your Anonymous Link</Link>
+          </Button>
         </section>
 
-        {/* Carousel for Messages */}
+        {/* Carousel for Messages - UPDATED SECTION */}
         <Carousel
-          plugins={[Autoplay({ delay: 2000 })]}
-          className="w-full max-w-lg md:max-w-xl"
+          plugins={[Autoplay({ delay: 2500, stopOnInteraction: true })]}
+          className="w-full max-w-xs sm:max-w-md md:max-w-xl mx-auto"
         >
           <CarouselContent>
-            {messages.map((message, index) => (
-              <CarouselItem key={index} className="p-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{message.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 md:space-x-4">
-                    <Mail className="flex-shrink-0" />
-                    <div>
-                      <p>{message.content}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {message.received}
+            {messages.map((message) => (
+              <CarouselItem key={message.title} className="p-2 sm:p-4">
+                {/* Change 1: Added a fixed height and flex properties to the Card.
+                  This ensures all carousel items are the same size for a smooth animation.
+                */}
+                <Card className="bg-black/60 border-gray-700/50 backdrop-blur-sm shadow-lg h-52 flex flex-col">
+                  {/* Change 2: CardContent now grows to fill the Card and centers its 
+                    content both vertically and horizontally. Padding is also responsive.
+                  */}
+                  <CardContent className="flex-grow flex flex-col items-center justify-center p-4 sm:p-6">
+                    {/* Change 3: Centered the text alignment for the content */}
+                    <blockquote className="space-y-3 text-center">
+                      {/* Change 4: Made the font size responsive for smaller screens */}
+                      <p className="text-base sm:text-lg font-medium text-white">
+                        "{message.content}"
                       </p>
-                    </div>
+                      <footer className="text-sm text-neutral-400">
+                        - Received: {message.received}
+                      </footer>
+                    </blockquote>
                   </CardContent>
                 </Card>
               </CarouselItem>
@@ -58,10 +67,10 @@ export default function Home() {
         </Carousel>
       </main>
 
-      {/* Footer */}
-      <footer className="text-center p-4 md:p-6 bg-gray-900 text-white">
-        © 2025 True Feedback. All rights reserved.
+      {/* Footer - no changes here */}
+      <footer className="text-center p-4 md:p-6 bg-gray-900 text-white border-t border-gray-800">
+        © 2025 True Feedback. Made with ❤️ by Sharvil.
       </footer>
-    </>
+    </div>
   );
 }
