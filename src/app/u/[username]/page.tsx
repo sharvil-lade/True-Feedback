@@ -34,10 +34,13 @@ const Page = () => {
       toast.success("Message sent successfully!");
       setValue("message", "");
     } catch (error) {
-      const axiosError = error as AxiosError<any>;
-      toast.error(
-        axiosError.response?.data?.message ?? "Failed to send message."
-      );
+      if (axios.isAxiosError(error)) {
+        toast.error(
+          error.response?.data?.message ?? "Failed to send message."
+        );
+      } else {
+        toast.error("Failed to send message.");
+      }
     } finally {
       setIsSending(false);
     }
