@@ -32,7 +32,7 @@ export default function Home() {
           </Button>
         </section>
 
-        <Carousel
+        {/* <Carousel
           plugins={[Autoplay({ delay: 2500, stopOnInteraction: true })]}
           className="w-full max-w-xs sm:max-w-md md:max-w-xl mx-auto"
         >
@@ -54,7 +54,7 @@ export default function Home() {
               </CarouselItem>
             ))}
           </CarouselContent>
-        </Carousel>
+        </Carousel> */}
       </main>
 
       {/* Footer - no changes here */}
