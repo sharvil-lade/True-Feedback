@@ -104,6 +104,3 @@ npm run lint    # Run linting
 - MongoDB + Mongoose
 - Nodemailer + React Email
 - Google Generative AI (Gemini)
-
-## License
-No license file is provided. If you plan to open source, consider adding a license (e.g., MIT).
