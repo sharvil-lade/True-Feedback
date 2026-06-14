@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 // DELETE /api/delete-message/:messageId
 export async function DELETE(
   request: Request,
-  { params }: { params: { messageId: string } }
+  { params }: { params: Promise<{ messageId: string }> }
 ) {
   await dbConnect();
 
@@ -19,7 +19,7 @@ export async function DELETE(
     );
   }
 
-  const { messageId } = params;
+  const { messageId } = await params;
   if (!messageId || !mongoose.isValidObjectId(messageId)) {
     return Response.json(
       { success: false, message: "Valid message ID is required" },
