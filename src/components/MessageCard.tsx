@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from "axios";
 import dayjs from "dayjs";
-import { X } from "lucide-react";
+import { X, AlertTriangle } from "lucide-react";
 import { Message } from "@/model/User";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -49,13 +49,23 @@ export function MessageCard({ message, onMessageDelete }: MessageCardProps) {
   };
 
   return (
-    <Card className="card-bordered">
+    <Card className={`card-bordered ${message.isFlagged ? "border-orange-400 border-2" : ""}`}>
       <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>{message.content}</CardTitle>
+        <div className="flex justify-between items-start gap-2">
+          <div className="flex-1 min-w-0">
+            {message.isFlagged && (
+              <div className="flex items-center gap-1 mb-2">
+                <AlertTriangle className="w-3 h-3 text-orange-500 flex-shrink-0" />
+                <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200">
+                  Flagged · borderline content
+                </span>
+              </div>
+            )}
+            <CardTitle className="text-base break-words">{message.content}</CardTitle>
+          </div>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive">
+              <Button variant="destructive" size="icon" className="flex-shrink-0">
                 <X className="w-5 h-5" />
               </Button>
             </AlertDialogTrigger>
@@ -76,7 +86,7 @@ export function MessageCard({ message, onMessageDelete }: MessageCardProps) {
             </AlertDialogContent>
           </AlertDialog>
         </div>
-        <div className="text-sm">
+        <div className="text-sm text-gray-500">
           {dayjs(message.createdAt).format("MMM D, YYYY h:mm A")}
         </div>
       </CardHeader>

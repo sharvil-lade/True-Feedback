@@ -3,6 +3,9 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface Message extends Document {
   content: string;
   createdAt: Date;
+  isFlagged: boolean;
+  moderationScore: number;
+  moderationLabel: string;
 }
 
 const MessageSchema: Schema<Message> = new mongoose.Schema({
@@ -14,6 +17,18 @@ const MessageSchema: Schema<Message> = new mongoose.Schema({
     type: Date,
     required: true,
     default: Date.now,
+  },
+  isFlagged: {
+    type: Boolean,
+    default: false,
+  },
+  moderationScore: {
+    type: Number,
+    default: 0,
+  },
+  moderationLabel: {
+    type: String,
+    default: "safe",
   },
 });
 

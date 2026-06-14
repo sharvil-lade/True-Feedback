@@ -9,7 +9,7 @@ import { Message } from "@/model/User";
 import { ApiResponse } from "@/types/ApiResponse";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios, { AxiosError } from "axios";
-import { Loader2, RefreshCcw, Copy } from "lucide-react";
+import { Loader2, RefreshCcw, Copy, AlertTriangle } from "lucide-react";
 import { User } from "next-auth";
 import { useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useState } from "react";
@@ -21,6 +21,7 @@ function DashboardPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSwitchLoading, setIsSwitchLoading] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<"all" | "flagged">("all");
 
   const { toast } = useToast();
 
@@ -123,6 +124,10 @@ function DashboardPage() {
 
   const { username } = session.user as User;
 
+  const flaggedCount = messages.filter((m) => m.isFlagged).length;
+  const displayedMessages =
+    activeFilter === "flagged" ? messages.filter((m) => m.isFlagged) : messages;
+
   const baseUrl = `${
     typeof window !== "undefined"
       ? window.location.protocol + "//" + window.location.host
@@ -199,7 +204,7 @@ function DashboardPage() {
         <Separator />
 
         <section className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold">Received Messages</h2>
             <Button
               variant="outline"
@@ -218,9 +223,33 @@ function DashboardPage() {
             </Button>
           </div>
 
-          {messages.length > 0 ? (
+          <div className="flex gap-2 mb-6">
+            <button
+              onClick={() => setActiveFilter("all")}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                activeFilter === "all"
+                  ? "bg-gray-900 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              All ({messages.length})
+            </button>
+            <button
+              onClick={() => setActiveFilter("flagged")}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                activeFilter === "flagged"
+                  ? "bg-orange-500 text-white"
+                  : "bg-orange-50 text-orange-700 hover:bg-orange-100"
+              }`}
+            >
+              <AlertTriangle className="w-3.5 h-3.5" />
+              Flagged ({flaggedCount})
+            </button>
+          </div>
+
+          {displayedMessages.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {messages.map((message) => (
+              {displayedMessages.map((message) => (
                 <MessageCard
                   key={message._id as string}
                   message={message}
@@ -230,9 +259,15 @@ function DashboardPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-lg text-gray-500">No messages to display.</p>
+              <p className="text-lg text-gray-500">
+                {activeFilter === "flagged"
+                  ? "No flagged messages."
+                  : "No messages to display."}
+              </p>
               <p className="text-sm text-gray-400 mt-2">
-                Share your unique link to start receiving messages!
+                {activeFilter === "flagged"
+                  ? "All received messages passed content moderation."
+                  : "Share your unique link to start receiving messages!"}
               </p>
             </div>
           )}

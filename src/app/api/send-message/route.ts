@@ -1,6 +1,7 @@
 import UserModel from "@/model/User";
 import dbConnect from "@/lib/dbConnect";
 import { Message } from "@/model/User";
+import { moderateMessage } from "@/lib/moderateMessage";
 
 export async function POST(request: Request) {
   await dbConnect();
@@ -16,17 +17,35 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if the user is accepting messages
     if (!user.isAcceptingMessages) {
       return Response.json(
         { message: "User is not accepting messages", success: false },
-        { status: 403 } // 403 Forbidden status
+        { status: 403 }
       );
     }
 
-    const newMessage = { content, createdAt: new Date() };
+    const moderation = await moderateMessage(content);
 
-    // Push the new message to the user's messages array
+    if (moderation.label === "toxic") {
+      return Response.json(
+        {
+          message:
+            "Message blocked: content violates community guidelines",
+          success: false,
+          blocked: true,
+        },
+        { status: 400 }
+      );
+    }
+
+    const newMessage = {
+      content,
+      createdAt: new Date(),
+      isFlagged: moderation.label === "borderline",
+      moderationScore: moderation.score,
+      moderationLabel: moderation.label,
+    };
+
     user.messages.push(newMessage as Message);
     await user.save();
 
