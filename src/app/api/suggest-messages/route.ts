@@ -3,8 +3,6 @@ import { NextResponse } from "next/server";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
-export const runtime = "edge";
-
 export async function GET(req: Request) {
   try {
     const prompt =

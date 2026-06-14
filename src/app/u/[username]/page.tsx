@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
-import { Loader2, Send, Sparkles, ShieldCheck } from "lucide-react";
+import { Loader2, Send, Wand2, ShieldCheck } from "lucide-react";
 
 const Page = () => {
   const { username } = useParams() as { username: string };
@@ -20,8 +20,7 @@ const Page = () => {
   });
 
   const [isSending, setIsSending] = useState(false);
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
-  const [suggestedMessages, setSuggestedMessages] = useState<string[]>([]);
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   const messageValue = watch("message");
 
@@ -34,11 +33,10 @@ const Page = () => {
       });
       toast.success("Message sent anonymously!");
       setValue("message", "");
-      setSuggestedMessages([]);
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        const msg = error.response?.data?.message ?? "Failed to send message.";
         const isBlocked = error.response?.data?.blocked;
+        const msg = error.response?.data?.message ?? "Failed to send message.";
         toast.error(isBlocked ? "Message blocked by AI moderation." : msg);
       } else {
         toast.error("Failed to send message.");
@@ -48,20 +46,25 @@ const Page = () => {
     }
   };
 
-  const fetchSuggestedMessages = async () => {
-    setIsLoadingSuggestions(true);
+  const handleEnhance = async () => {
+    const current = messageValue?.trim();
+    if (!current) {
+      toast.error("Write a message first, then enhance it.");
+      return;
+    }
+
+    setIsEnhancing(true);
     try {
-      const response = await axios.get("/api/suggest-messages");
-      const msgs = response.data
-        .split("||")
-        .map((msg: string) => msg.trim().replace(/^"|"$/g, ""))
-        .filter((msg: string) => msg.length > 0);
-      setSuggestedMessages(msgs);
-      if (msgs.length === 0) toast.error("No suggestions available.");
+      const response = await axios.post<{ enhanced: string; success: boolean }>(
+        "/api/enhance-message",
+        { content: current }
+      );
+      setValue("message", response.data.enhanced);
+      toast.success("Message enhanced!");
     } catch {
-      toast.error("Could not fetch suggestions.");
+      toast.error("Could not enhance message. Try again.");
     } finally {
-      setIsLoadingSuggestions(false);
+      setIsEnhancing(false);
     }
   };
 
@@ -77,7 +80,7 @@ const Page = () => {
         </div>
 
         <div className="w-full max-w-2xl mx-auto space-y-6">
-          {/* Header card */}
+          {/* Header */}
           <div className="text-center">
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400">
               True Feedback
@@ -88,7 +91,7 @@ const Page = () => {
             </p>
           </div>
 
-          {/* Main form card */}
+          {/* Main card */}
           <div className="bg-black/50 border border-gray-700/50 rounded-2xl shadow-2xl p-6 sm:p-8 backdrop-blur-sm space-y-5">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
@@ -115,6 +118,27 @@ const Page = () => {
                 </div>
               </div>
 
+              {/* Enhance button */}
+              <button
+                type="button"
+                onClick={handleEnhance}
+                disabled={isEnhancing || !messageValue?.trim()}
+                className="w-full flex items-center justify-center gap-2 h-11 text-sm font-semibold bg-transparent border border-purple-500/50 text-purple-300 hover:bg-purple-500/10 hover:border-purple-400 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-all duration-200"
+              >
+                {isEnhancing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Enhancing...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="h-4 w-4" />
+                    Enhance with AI
+                  </>
+                )}
+              </button>
+
+              {/* Send button */}
               <button
                 type="submit"
                 disabled={isSending}
@@ -137,59 +161,7 @@ const Page = () => {
                 Messages are screened by AI. Harmful content is blocked automatically.
               </p>
             </div>
-
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-700/60" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-transparent px-3 text-gray-500 uppercase tracking-widest">
-                  or
-                </span>
-              </div>
-            </div>
-
-            {/* Suggest button */}
-            <button
-              type="button"
-              onClick={fetchSuggestedMessages}
-              disabled={isLoadingSuggestions}
-              className="w-full flex items-center justify-center gap-2 h-12 text-base font-semibold bg-transparent border border-gray-600 text-gray-300 hover:bg-white/5 hover:border-gray-500 disabled:opacity-40 rounded-xl transition-all duration-300"
-            >
-              {isLoadingSuggestions ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4 text-yellow-400" /> Suggest Messages with AI
-                </>
-              )}
-            </button>
           </div>
-
-          {/* Suggestions */}
-          {suggestedMessages.length > 0 && (
-            <div className="bg-black/40 border border-gray-700/50 rounded-2xl p-5 backdrop-blur-sm space-y-3">
-              <p className="text-xs text-gray-500 uppercase tracking-widest text-center">
-                Click to use a suggestion
-              </p>
-              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                {suggestedMessages.map((msg, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => {
-                      setValue("message", msg);
-                      toast.success("Suggestion loaded!");
-                    }}
-                    className="w-full text-left bg-gray-800/60 hover:bg-gray-700/60 border border-gray-700/50 hover:border-gray-600 p-3.5 rounded-xl text-sm text-gray-300 leading-relaxed transition-all duration-200"
-                  >
-                    {msg}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </>
